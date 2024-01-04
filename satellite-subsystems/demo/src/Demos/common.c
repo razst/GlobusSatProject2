@@ -637,3 +637,12 @@ void print_error(int error)
 	    TRACE_ERROR("ERROR %d encountered while executing the request\n\r", error);
 	}
 }
+
+int send_beacon(WOD_Telemetry_t beacon)
+{
+	beacon.vbat = int num = (rand() % (8 - 4 + 1)) + 4;
+
+
+
+	return 0;
+}

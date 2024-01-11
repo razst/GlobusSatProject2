@@ -638,11 +638,9 @@ void print_error(int error)
 	}
 }
 
-int send_beacon(WOD_Telemetry_t beacon)
-{
-	beacon.vbat = int num = (rand() % (8 - 4 + 1)) + 4;
-
-
-
-	return 0;
-}
+//int send_beacon(WOD_Telemetry_t beacon)
+//{
+//	//beacon.vbat = int num = (rand() % (8 - 4 + 1)) + 4;
+//
+//	return 0;
+//}

@@ -41,7 +41,7 @@ typedef struct __attribute__ ((__packed__)) WOD_Telemetry_t
 	unsigned short current_5V;			///< the up-to-date 5 Volt bus current of the battery [mA]
 	unsigned short mcu_temp; 				/*!< Measured temperature provided by a sensor internal to the MCU in raw form */
 	unsigned short bat_temp; 				/*!< 2 cell battery pack: not used 4 cell battery pack: Battery pack temperature on the front of the battery pack. */
-	int32_t solar_panels[6];                // temp of each solar panel
+	//int32_t solar_panels[6];                // temp of each solar panel
 	unsigned long sat_time;				///< current Unix time of the satellites clock [sec]
 	unsigned int free_memory;		///< number of bytes free in the satellites SD [byte]
 	unsigned int corrupt_bytes;		///< number of currpted bytes in the memory	[bytes]
@@ -76,6 +76,6 @@ void print_error(int error);
 /***
  *
  */
-WOD_Telemetry_t send_beacon();
+//WOD_Telemetry_t send_beacon(WOD_Telemetry_t beacon);
 
 #endif /* COMMON_H_ */

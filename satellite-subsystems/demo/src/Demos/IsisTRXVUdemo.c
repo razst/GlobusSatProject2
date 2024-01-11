@@ -23,7 +23,7 @@
 #include <hal/Drivers/LED.h>
 #include <hal/boolean.h>
 #include <hal/errors.h>
-
+#include "IsisTRXVUdemo.h"
 #include <satellite-subsystems/IsisTRXVU.h>
 
 #include <stddef.h>
@@ -468,6 +468,44 @@ static Boolean sendPKWithCountDelay(void)
 	return TRUE;
 }
 
+
+void activateTransponder(void* args)
+{
+	int* time = (int *)args;
+	int err = 0;
+	char data[2] = {0, 0};
+
+	data[0] = 0x38; //function
+	data[1] = 0x02; //activate
+
+	err = I2C_write(I2C_TRXVU_TC_ADDR, data, 2);
+
+	printf("/n/n/nTransponder activated for %d seconds. error result: %d\n\n", *time, err);
+	vTaskDelay(*time * 1000 / portTICK_RATE_MS);
+
+
+	data[1] = 0x01; //deactivate
+	err = I2C_write(I2C_TRXVU_TC_ADDR, data, 2);
+	printf("/n/n/nTransponder deactivated, error result: %d\n\n", err);
+}
+
+
+static Boolean createTransponderTask(void)
+{
+	int time = 0;
+	printf("Enter time for the transponder to be activated(in secondes):\n");
+	while(UTIL_DbguGetIntegerMinMax(&time, 1, 1200) == 0);
+
+	xTaskHandle taskTransponderHandle;
+
+	xTaskGenericCreate(activateTransponder, (const signed char*)"taskTransponder", 4096, &time, configMAX_PRIORITIES-3, &taskTransponderHandle, NULL, NULL);
+
+//	vTaskStartScheduler();
+
+	return TRUE;
+}
+
+
 static Boolean selectAndExecuteTRXVUDemoTest(void)
 {
 	int selection = 0;
@@ -487,7 +525,8 @@ static Boolean selectAndExecuteTRXVUDemoTest(void)
 	printf("\t 11) (revD) Get receiver telemetry \n\r");
 	printf("\t 12) (revD) Get transmitter telemetry \n\r");
 	printf("\t 13) Send Packet and choose count & delay \n\r");
-	printf("\t 14) Return to main menu \n\r");
+	printf("\t 14) Activate Transponder and choose time \n\r");
+	printf("\t 15) Return to main menu \n\r");
 
 	while(UTIL_DbguGetIntegerMinMax(&selection, 1, 14) == 0);
 
@@ -532,6 +571,9 @@ static Boolean selectAndExecuteTRXVUDemoTest(void)
 		offerMoreTests = sendPKWithCountDelay();
 		break;
 	case 14:
+		offerMoreTests = createTransponderTask();
+		break;
+	case 15:
 		offerMoreTests = FALSE;
 		break;
 

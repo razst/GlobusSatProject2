@@ -10,6 +10,8 @@
 
 #include <hal/boolean.h>
 
+#define I2C_TRXVU_TC_ADDR 0x61		//!< I2C address of the transceiver
+
 /***
  * Starts demo.
  * Calls Init and Menu in sequence.

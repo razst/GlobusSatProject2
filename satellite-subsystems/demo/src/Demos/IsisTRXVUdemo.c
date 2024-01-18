@@ -6,6 +6,7 @@
  */
 
 #include "common.h"
+//#include <hal/>
 #include "trxvu_frame_ready.h"
 
 #include <freertos/FreeRTOS.h>
@@ -471,7 +472,8 @@ static Boolean sendPKWithCountDelay(void)
 
 void activateTransponder(void* args)
 {
-	int* time = (int *)args;
+	int time = ( ( int ) args );
+
 	int err = 0;
 	char data[2] = {0, 0};
 
@@ -480,13 +482,14 @@ void activateTransponder(void* args)
 
 	err = I2C_write(I2C_TRXVU_TC_ADDR, data, 2);
 
-	printf("/n/n/nTransponder activated for %d seconds. error result: %d\n\n", *time, err);
-	vTaskDelay(*time * 1000 / portTICK_RATE_MS);
+	printf("\n\n\nTransponder activated for %d seconds. error result: %d\n\n", time, err);
+	vTaskDelay(time * 1000 / portTICK_RATE_MS);
 
 
 	data[1] = 0x01; //deactivate
 	err = I2C_write(I2C_TRXVU_TC_ADDR, data, 2);
-	printf("/n/n/nTransponder deactivated, error result: %d\n\n", err);
+	printf("\n\n\nTransponder deactivated, error result: %d\n\n", err);
+	vTaskDelete(NULL);
 }
 
 
@@ -496,9 +499,10 @@ static Boolean createTransponderTask(void)
 	printf("Enter time for the transponder to be activated(in secondes):\n");
 	while(UTIL_DbguGetIntegerMinMax(&time, 1, 1200) == 0);
 
+	printf("\nTime: %d\n", time);
 	xTaskHandle taskTransponderHandle;
 
-	xTaskGenericCreate(activateTransponder, (const signed char*)"taskTransponder", 4096, &time, configMAX_PRIORITIES-3, &taskTransponderHandle, NULL, NULL);
+	xTaskCreate(activateTransponder, (const signed char*)"taskTransponder", 4096, (void *)time, configMAX_PRIORITIES-3, &taskTransponderHandle);
 
 //	vTaskStartScheduler();
 
@@ -529,7 +533,7 @@ static Boolean selectAndExecuteTRXVUDemoTest(void)
 	printf("\t 15) Send beacon \n\r");
 	printf("\t 16) Return to main menu \n\r");
 
-	while(UTIL_DbguGetIntegerMinMax(&selection, 1, 14) == 0);
+	while(UTIL_DbguGetIntegerMinMax(&selection, 1, 15) == 0);
 
 	switch(selection) {
 	case 1:

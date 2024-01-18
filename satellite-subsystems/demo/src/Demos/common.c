@@ -638,9 +638,80 @@ void print_error(int error)
 	}
 }
 
-//int send_beacon(WOD_Telemetry_t beacon)
-//{
-//	//beacon.vbat = int num = (rand() % (8 - 4 + 1)) + 4;
-//
-//	return 0;
-//}
+int createSendBeaconTask()
+{
+	printf("\nCreating beacon task...\n");
+
+	xTaskHandle taskBeaconHandle;
+	xTaskGenericCreate(sendBeaconTask, (const signed char*)"taskBeacon", 4096, NULL, configMAX_PRIORITIES-3, &taskBeaconHandle, NULL, NULL);
+
+	return 1;
+}
+
+int sendBeaconTask(void* args)
+{
+	srand(time(NULL));
+
+	int power_mode = rand() % 5 + 1;
+
+	WOD_Telemetry_t beacon;
+	beacon = createRandBeacon();
+
+
+	// delay based on battery power
+//	while(true)
+//	{
+//		switch(power_mode) {
+//		case(1):
+//			vTaskDelay(1 * 1000 / portTICK_RATE_MS);
+//			break;
+//		case(2):
+//			vTaskDelay(2 * 1000 / portTICK_RATE_MS);
+//			break;
+//		case(3):
+//			vTaskDelay(3 * 1000 / portTICK_RATE_MS);
+//			break;
+//		case(4):
+//			vTaskDelay(4 * 1000 / portTICK_RATE_MS);
+//			break;
+//		case(5):
+//			vTaskDelay(5 * 1000 / portTICK_RATE_MS);
+//			break;
+//		default:
+//			vTaskDelay(10 * 1000 / portTICK_RATE_MS);
+//			break;
+//		}
+//	}
+	// put inside loop
+	printf("Vbat: %d", beacon.vbat);
+	printf("Volt_5V: %d", beacon.volt_5V);
+	printf("Charging power: %d", beacon.charging_power);
+	return 1;
+}
+WOD_Telemetry_t createRandBeacon()
+{
+	srand(time(NULL));
+
+	WOD_Telemetry_t beacon;
+
+	beacon.vbat = rand() % 8 + 6;
+	beacon.volt_5V = rand() % 8 + 6;
+	beacon.volt_3V3 = rand() % 8 + 6;
+	beacon.charging_power = rand() % 8 + 6;
+	beacon.consumed_power = rand() % 8 + 6;
+	beacon.electric_current = rand() % 8 + 6;
+	beacon.current_3V3 = rand() % 8 + 6;
+	beacon.current_5V = rand() % 8 + 6;
+	beacon.mcu_temp = rand() % 30 + 0;
+	beacon.bat_temp = rand() % 30 + 0;
+		//int32_t solar_panels[6];                // temp of each solar panel
+	beacon.sat_time = rand() % 24 + 0; //
+	beacon.free_memory = rand() % 10 + 1; //
+	beacon.corrupt_bytes = rand() % 10 + 1; //
+	beacon.number_of_resets = 0;
+	beacon.sat_uptime = rand() % 10 + 1; //
+	beacon.num_of_cmd_resets = rand() % 10 + 1; //
+	return beacon;
+
+
+}

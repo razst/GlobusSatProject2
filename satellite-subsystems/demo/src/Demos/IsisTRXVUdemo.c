@@ -526,7 +526,8 @@ static Boolean selectAndExecuteTRXVUDemoTest(void)
 	printf("\t 12) (revD) Get transmitter telemetry \n\r");
 	printf("\t 13) Send Packet and choose count & delay \n\r");
 	printf("\t 14) Activate Transponder and choose time \n\r");
-	printf("\t 15) Return to main menu \n\r");
+	printf("\t 15) Send beacon \n\r");
+	printf("\t 16) Return to main menu \n\r");
 
 	while(UTIL_DbguGetIntegerMinMax(&selection, 1, 14) == 0);
 
@@ -574,6 +575,9 @@ static Boolean selectAndExecuteTRXVUDemoTest(void)
 		offerMoreTests = createTransponderTask();
 		break;
 	case 15:
+		offerMoreTests = createSendBeaconTask();
+		break;
+	case 16:
 		offerMoreTests = FALSE;
 		break;
 

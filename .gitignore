@@ -54,3 +54,4 @@ Module.symvers
 Mkfile.old
 dkms.conf
 satellite-subsystems/demo/.settings/language.settings.xml
+satellite-subsystems/demo/.settings/language.settings.xml

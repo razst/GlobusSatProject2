@@ -76,6 +76,13 @@ void print_error(int error);
 /***
  *
  */
-//WOD_Telemetry_t send_beacon(WOD_Telemetry_t beacon);
-
+int createSendBeaconTask();
+/***
+ *
+ */
+int sendBeaconTask(void* args);
+/***
+ *
+ */
+WOD_Telemetry_t createRandBeacon();
 #endif /* COMMON_H_ */

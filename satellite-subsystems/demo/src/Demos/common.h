@@ -29,27 +29,7 @@ typedef enum CONFIG_PARAM_OP_enum				//!< configuration param printing an gettin
 	CONFIG_PARAM_OP_print = 2					///!< show parameter id and data to the user
 } CONFIG_PARAM_OP_e;
 
-typedef struct __attribute__ ((__packed__)) WOD_Telemetry_t
-{
-	unsigned short vbat;					///< the current voltage on the battery [mV]
-	unsigned short volt_5V;				///< the current voltage on the 5V bus [mV]
-	unsigned short volt_3V3;				///< the current voltage on the 3V3 bus [mV]
-	unsigned short charging_power;			///< the current charging power [mW]
-	unsigned short consumed_power;			///< the power consumed by the satellite [mW]
-	unsigned short electric_current;		///< the up-to-date electric current of the battery [mA]
-	unsigned short current_3V3;			///< the up-to-date 3.3 Volt bus current of the battery [mA]
-	unsigned short current_5V;			///< the up-to-date 5 Volt bus current of the battery [mA]
-	unsigned short mcu_temp; 				/*!< Measured temperature provided by a sensor internal to the MCU in raw form */
-	unsigned short bat_temp; 				/*!< 2 cell battery pack: not used 4 cell battery pack: Battery pack temperature on the front of the battery pack. */
-	//int32_t solar_panels[6];                // temp of each solar panel
-	unsigned long sat_time;				///< current Unix time of the satellites clock [sec]
-	unsigned int free_memory;		///< number of bytes free in the satellites SD [byte]
-	unsigned int corrupt_bytes;		///< number of currpted bytes in the memory	[bytes]
-	unsigned int number_of_resets;	///< counts the number of resets the satellite has gone through [#]
-	unsigned long sat_uptime;			///< Sat uptime
-	unsigned int photo_diodes[5]; 			// photo diodes
-	unsigned int num_of_cmd_resets;///< counts the number of resets the satellite has gone through due to ground station command [#]
-} WOD_Telemetry_t;
+
 
 
 /***
@@ -76,13 +56,5 @@ void print_error(int error);
 /***
  *
  */
-int createSendBeaconTask();
-/***
- *
- */
-int sendBeaconTask(void* args);
-/***
- *
- */
-WOD_Telemetry_t createRandBeacon();
+
 #endif /* COMMON_H_ */

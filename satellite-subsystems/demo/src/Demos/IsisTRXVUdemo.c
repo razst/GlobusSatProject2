@@ -46,6 +46,8 @@
 static xTaskHandle watchdogKickTaskHandle = NULL;
 static xSemaphoreHandle trxvuInterruptTrigger = NULL;
 
+static beacon_arguments_t beacon_args;
+
 // Test Function
 static Boolean softResetVUTest(void)
 {
@@ -433,10 +435,6 @@ static Boolean sendPKWithCountDelay(void)
 	//Buffers and variables definition
 	int amount = 0, delay = 0;
 	unsigned char testBuffer1[2]  = {0x56,0x56};
-	unsigned char txCounter = 0;
-	unsigned char avalFrames = 0;
-	unsigned int timeoutCounter = 0;
-
 
 	printf("Enter number of packages:\n");
 	while(UTIL_DbguGetIntegerMinMax(&amount, 1, 100) == 0);
@@ -447,28 +445,36 @@ static Boolean sendPKWithCountDelay(void)
 //	printf("Enter string to send:\n");
 //	UTIL_DbguGetString(&testBuffer1, 128);
 
-	while(txCounter < amount && timeoutCounter < amount)
-	{
-		printf("\r\n Transmission of single buffers with default callsign. AX25 Format. \r\n");
-//		print_error(IsisTrxvu_tcSendAX25DefClSign(0, testBuffer1, strcspn(testBuffer1, '\0') + 1, &avalFrames));
-		print_error(IsisTrxvu_tcSendAX25DefClSign(0, testBuffer1, 3, &avalFrames));
-		vTaskDelay(delay / portTICK_RATE_MS);
-
-		if ((avalFrames != 0)&&(avalFrames != 255))
-		{
-			printf("\r\n Number of frames in the buffer: %d  \r\n", avalFrames);
-			txCounter++;
-		}
-		else
-		{
-			vTaskDelay(100 / portTICK_RATE_MS);
-			timeoutCounter++;
-		}
-	}
+	send_data(testBuffer1, 2, delay, amount);
 
 	return TRUE;
 }
 
+int send_data(void* data, int length, int delay, int amount)
+{
+	unsigned char txCounter = 0;
+	unsigned char avalFrames = 0;
+	unsigned int timeoutCounter = 0;
+	while(txCounter < amount && timeoutCounter < amount)
+		{
+			printf("\r\n Transmission of single buffers with default callsign. AX25 Format. \r\n");
+	//		print_error(IsisTrxvu_tcSendAX25DefClSign(0, testBuffer1, strcspn(testBuffer1, '\0') + 1, &avalFrames));
+			print_error(IsisTrxvu_tcSendAX25DefClSign(0, data, length, &avalFrames));
+			vTaskDelay(delay / portTICK_RATE_MS);
+
+			if ((avalFrames != 0)&&(avalFrames != 255))
+			{
+				printf("\r\n Number of frames in the buffer: %d  \r\n", avalFrames);
+				txCounter++;
+			}
+			else
+			{
+				vTaskDelay(100 / portTICK_RATE_MS);
+				timeoutCounter++;
+			}
+		}
+	return 0;
+}
 
 void activateTransponder(void* args)
 {
@@ -507,6 +513,96 @@ static Boolean createTransponderTask(void)
 //	vTaskStartScheduler();
 
 	return TRUE;
+}
+
+int createSendBeaconTask()
+{
+	printf("Enter delay between beacons(in secondes):\n");
+	while(UTIL_DbguGetIntegerMinMax(&beacon_args.delay, 1, 12000) == 0);
+
+	printf("Enter amount of beacons:\n");
+	while(UTIL_DbguGetIntegerMinMax(&beacon_args.amount, 1, 12000) == 0);
+
+	printf("\nCreating beacon task...\n");
+
+	xTaskHandle taskBeaconHandle;
+	xTaskGenericCreate(sendBeaconTask, (const signed char*)"taskBeacon", 4096, &beacon_args, configMAX_PRIORITIES-3, &taskBeaconHandle, NULL, NULL);
+
+	return 1;
+}
+
+int sendBeaconTask(void* args)
+{
+	beacon_arguments_t *beacon_args = (beacon_arguments_t *) args;
+	printf("delay: %d, amount: %d", beacon_args->delay, beacon_args->amount);
+
+	/*srand(time(NULL));
+
+	int power_mode = rand() % 5 + 1;*/
+
+	WOD_Telemetry_t beacon;
+	createRandBeacon(&beacon);
+
+
+	// delay based on battery power
+//	while(true)
+//	{
+//		switch(power_mode) {
+//		case(1):
+//			vTaskDelay(1 * 1000 / portTICK_RATE_MS);
+//			break;
+//		case(2):
+//			vTaskDelay(2 * 1000 / portTICK_RATE_MS);
+//			break;
+//		case(3):
+//			vTaskDelay(3 * 1000 / portTICK_RATE_MS);
+//			break;
+//		case(4):
+//			vTaskDelay(4 * 1000 / portTICK_RATE_MS);
+//			break;
+//		case(5):
+//			vTaskDelay(5 * 1000 / portTICK_RATE_MS);
+//			break;
+//		default:
+//			vTaskDelay(10 * 1000 / portTICK_RATE_MS);
+//			break;
+//		}
+//	}
+	// put inside loop
+	printf("Vbat: %d", beacon.vbat);
+	printf("Volt_5V: %d", beacon.volt_5V);
+	printf("Charging power: %d", beacon.charging_power);
+
+	send_data(&beacon, sizeof(beacon), beacon_args->delay, beacon_args->amount);
+
+	return 0;
+}
+int createRandBeacon(WOD_Telemetry_t* beacon)
+{
+	srand(time(NULL));
+
+
+	beacon->vbat = rand() % 8 + 6;
+	beacon->volt_5V = rand() % 8 + 6;
+	beacon->volt_3V3 = rand() % 8 + 6;
+	beacon->charging_power = rand() % 8 + 6;
+	beacon->consumed_power = rand() % 8 + 6;
+	beacon->electric_current = rand() % 8 + 6;
+	beacon->current_3V3 = rand() % 8 + 6;
+	beacon->current_5V = rand() % 8 + 6;
+	beacon->mcu_temp = rand() % 30 + 0;
+	beacon->bat_temp = rand() % 30 + 0;
+		//int32_t solar_panels[6];                // temp of each solar panel
+	beacon->sat_time = rand() % 24 + 0; //
+	beacon->free_memory = rand() % 10 + 1; //
+	beacon->corrupt_bytes = rand() % 10 + 1; //
+	beacon->number_of_resets = 0;
+	beacon->sat_uptime = rand() % 10 + 1; //
+	beacon->num_of_cmd_resets = rand() % 10 + 1; //
+
+	return 0;
+
+
 }
 
 

@@ -573,7 +573,7 @@ int sendBeaconTask(void* args)
 	printf("Volt_5V: %d", beacon.volt_5V);
 	printf("Charging power: %d", beacon.charging_power);
 
-	send_data(&beacon, sizeof(beacon), beacon_args->delay, beacon_args->amount);
+	send_data(&beacon, sizeof(beacon), beacon_args->delay * 1000, beacon_args->amount);
 
 	return 0;
 }
